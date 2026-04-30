@@ -15,6 +15,8 @@ const STATUS_COLORS_LIGHT = {
   Dead:   { bg: "#F1EFE8", text: "#444441", border: "#B4B2A9" },
 };
 
+const APP_PASSWORD = "charan123"; // 🔑 Change this to your own password
+
 const PROJECT_OPTIONS = ["Godrej Eternal Palms", "Other Project"];
 
 const SAMPLE_CLIENTS = [
@@ -54,9 +56,38 @@ export default function App() {
   const [notifPerm, setNotifPerm] = useState(typeof Notification!=="undefined"?Notification.permission:"denied");
   const [form, setForm] = useState({name:"",phone:"",project:"Godrej Eternal Palms",status:"New",followUpDate:"",note:""});
   const [logForm, setLogForm] = useState({note:"",followUpDate:""});
+  const [loggedIn, setLoggedIn] = useState(() => sessionStorage.getItem("crm_auth")==="1");
+  const [pwInput, setPwInput] = useState("");
+  const [pwError, setPwError] = useState(false);
   const reminderRef = useRef(null);
 
+  function handleLogin() {
+    if (pwInput === APP_PASSWORD) { sessionStorage.setItem("crm_auth","1"); setLoggedIn(true); setPwError(false); }
+    else { setPwError(true); setPwInput(""); }
+  }
+
   const SC = dark ? STATUS_COLORS_DARK : STATUS_COLORS_LIGHT;
+
+  if (!loggedIn) return (
+    <div style={{minHeight:"100vh",background:"#0f1117",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"}}>
+      <div style={{background:"#1e2330",border:"0.5px solid #2a2f3d",borderRadius:16,padding:"32px 24px",width:"100%",maxWidth:340,textAlign:"center"}}>
+        <div style={{fontSize:32,marginBottom:8}}>🏢</div>
+        <div style={{fontWeight:600,fontSize:18,color:"#e8eaf0",marginBottom:4}}>CallTrack CRM</div>
+        <div style={{fontSize:13,color:"#7a8099",marginBottom:24}}>Godrej Eternal Palms</div>
+        <input
+          type="password" placeholder="Enter password"
+          value={pwInput} onChange={e=>{setPwInput(e.target.value);setPwError(false);}}
+          onKeyDown={e=>e.key==="Enter"&&handleLogin()}
+          style={{width:"100%",boxSizing:"border-box",background:"#181c24",color:"#e8eaf0",border:`1px solid ${pwError?"#f76a6a":"#2a2f3d"}`,borderRadius:8,padding:"10px 12px",fontSize:15,marginBottom:8,fontFamily:"inherit",textAlign:"center",letterSpacing:2}}
+          autoFocus
+        />
+        {pwError&&<div style={{fontSize:12,color:"#f76a6a",marginBottom:8}}>Incorrect password. Try again.</div>}
+        <button onClick={handleLogin} style={{width:"100%",background:"#4f8ef7",color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:14,fontWeight:500,cursor:"pointer",fontFamily:"inherit"}}>
+          Login
+        </button>
+      </div>
+    </div>
+  );
 
   useEffect(() => { saveClients(clients); }, [clients]);
   useEffect(() => { try { localStorage.setItem("crm_dark", dark?"1":"0"); } catch {} }, [dark]);
@@ -232,6 +263,7 @@ export default function App() {
           </div>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <button onClick={()=>setDark(!dark)} style={{...styles.btn,padding:"6px 10px",fontSize:16}}>{dark?"☀️":"🌙"}</button>
+            <button onClick={()=>{sessionStorage.removeItem("crm_auth");setLoggedIn(false);}} style={{...styles.btn,padding:"6px 10px",fontSize:12,color:"#f76a6a"}}>Logout</button>
             <button onClick={()=>{setShowAddClient(true);setView("clients");}} style={styles.btnPrimary}>+ Add</button>
           </div>
         </div>
